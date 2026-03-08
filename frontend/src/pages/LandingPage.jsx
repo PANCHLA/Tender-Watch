@@ -24,7 +24,7 @@ const PORTALS = [
 const STATS = [
     { value: '5', label: 'Portals Monitored' },
     { value: '24/7', label: 'Automated Scanning' },
-    { value: '<3s', label: 'Result Latency' },
+    { value: '<15 min', label: 'Result Latency' },
     { value: '∞', label: 'Tenders Tracked' },
 ]
 

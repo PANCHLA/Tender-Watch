@@ -55,9 +55,9 @@ export const useScanStore = create((set, get) => ({
         results: [...s.results, ...tenders],
     })),
 
-    toggleSave: (id) => set(s => ({
+    setSaved: (id, is_saved) => set(s => ({
         results: s.results.map(t =>
-            t.id === id ? { ...t, is_saved: !t.is_saved } : t
+            t.id === id ? { ...t, is_saved } : t
         ),
     })),
 
@@ -71,13 +71,17 @@ export const useTenderStore = create((set, get) => ({
     loading: false,
     selectedTender: null,
 
-    loadTenders: async (params) => {
+    loadTenders: async (params, append = false) => {
         set({ loading: true })
         try {
             const data = await fetchTenders(params)
-            set({ tenders: data.tenders || [], loading: false })
-        } catch {
+            set(s => ({
+                tenders: append ? [...s.tenders, ...(data.tenders || [])] : (data.tenders || []),
+                loading: false
+            }))
+        } catch (err) {
             set({ loading: false })
+            useToastStore.getState().show(err.message || 'Failed to load tenders', 'error')
         }
     },
 
@@ -85,15 +89,22 @@ export const useTenderStore = create((set, get) => ({
         try {
             const stats = await fetchStats()
             set({ stats })
-        } catch { }
+        } catch (err) {
+            useToastStore.getState().show('Failed to load dashboard statistics', 'error')
+        }
     },
 
     toggleSave: async (id) => {
-        const res = await apiSave(id)
-        set(s => ({
-            tenders: s.tenders.map(t => t.id === id ? { ...t, is_saved: res.is_saved } : t),
-        }))
-        return res
+        try {
+            const res = await apiSave(id)
+            set(s => ({
+                tenders: s.tenders.map(t => t.id === id ? { ...t, is_saved: res.is_saved } : t),
+            }))
+            return res
+        } catch (err) {
+            useToastStore.getState().show('Failed to save tender', 'error')
+            throw err
+        }
     },
 
     setSelected: (tender) => set({ selectedTender: tender }),
@@ -110,8 +121,9 @@ export const useWatchlistStore = create((set) => ({
         try {
             const data = await fetchWatchlists()
             set({ watchlists: data, loading: false })
-        } catch {
+        } catch (err) {
             set({ loading: false })
+            useToastStore.getState().show('Failed to load watchlists', 'error')
         }
     },
 

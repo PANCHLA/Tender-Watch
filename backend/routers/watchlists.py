@@ -50,10 +50,18 @@ class WatchlistUpdate(WatchlistCreate):
 # ── Endpoints ─────────────────────────────────────────────────────
 
 @router.get("")
-async def list_watchlists(user=Depends(get_current_user)):
+async def list_watchlists(
+    user=Depends(get_current_user),
+    page: int = 1,
+    page_size: int = 20,
+):
     if DEMO_MODE:
-        return [w for w in _demo_watchlists if w["user_id"] == user["id"]]
-    result = db().table("watchlists").select("*").eq("user_id", user["id"]).execute()
+        start = (page - 1) * page_size
+        results = [w for w in _demo_watchlists if w["user_id"] == user["id"]]
+        return results[start:start + page_size]
+        
+    start = (page - 1) * page_size
+    result = db().table("watchlists").select("*").eq("user_id", user["id"]).range(start, start + page_size - 1).execute()
     return result.data
 
 

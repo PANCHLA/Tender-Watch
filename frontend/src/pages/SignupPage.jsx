@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { signUpWithEmail } from '../lib/supabase'
+import { signUpWithEmail, signInWithGoogle } from '../lib/supabase'
 import { useAuthStore, useToastStore } from '../store'
 import LoadingSpinner from '../components/LoadingSpinner'
 
@@ -22,6 +22,11 @@ export default function SignupPage() {
         setUser(data.user, data.session)
         show('Account created! Welcome to TenderWatch.', 'success')
         navigate('/app')
+    }
+
+    async function handleGoogle() {
+        const { error } = await signInWithGoogle()
+        if (error) show(error.message, 'error')
     }
 
     return (
@@ -55,6 +60,18 @@ export default function SignupPage() {
                             {loading ? <LoadingSpinner size={16} /> : 'Create Account'}
                         </button>
                     </form>
+
+                    <div style={{ position: 'relative', margin: '20px 0', textAlign: 'center' }}>
+                        <hr className="divider" />
+                        <span style={{ position: 'absolute', top: -9, left: '50%', transform: 'translateX(-50%)', background: 'var(--surface)', padding: '0 10px', fontSize: 11, color: 'var(--text3)' }}>
+                            OR
+                        </span>
+                    </div>
+
+                    <button className="btn btn-secondary" onClick={handleGoogle} style={{ width: '100%', justifyContent: 'center' }}>
+                        <span>G</span> Continue with Google
+                    </button>
+
                     <p style={{ margin: '20px 0 0', textAlign: 'center', fontSize: 12, color: 'var(--text3)' }}>
                         Already have an account? <Link to="/login" style={{ color: 'var(--accent)', textDecoration: 'none' }}>Sign in</Link>
                     </p>

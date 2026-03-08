@@ -19,7 +19,7 @@ const ALL_PORTALS = [
 
 export default function DashboardPage() {
     const { show } = useToastStore()
-    const { scanning, activityLog, results, portalStatus, startScan, stopScan, addActivity, setPortalStatus, addResults, toggleSave } = useScanStore()
+    const { scanning, activityLog, results, portalStatus, startScan, stopScan, addActivity, setPortalStatus, addResults, setSaved } = useScanStore()
 
     const [keywords, setKeywords] = useState('')
     const [selectedPortals, setSelectedPortals] = useState(['gem', 'cppp'])
@@ -36,18 +36,30 @@ export default function DashboardPage() {
         if (feedRef.current) feedRef.current.scrollTop = 0
     }, [activityLog.length])
 
+    const [page, setPage] = useState(1)
+    const [hasMore, setHasMore] = useState(false)
+    const [loadingMore, setLoadingMore] = useState(false)
+
     // Load recent tenders from DB on mount (survives page refresh)
     useEffect(() => {
         if (results.length === 0 && !scanning) {
-            fetchTenders({ page_size: 50 })
-                .then(data => {
-                    if (data.tenders?.length > 0) {
-                        addResults(data.tenders)
-                    }
-                })
-                .catch(() => { })
+            loadRecentTenders(1)
         }
     }, [])
+
+    async function loadRecentTenders(p) {
+        setLoadingMore(true)
+        try {
+            const data = await fetchTenders({ page_size: 50, page: p })
+            const newTenders = data.tenders || []
+            if (newTenders.length > 0) {
+                addResults(newTenders)
+            }
+            setHasMore(newTenders.length === 50)
+            setPage(p)
+        } catch { }
+        setLoadingMore(false)
+    }
 
     function togglePortal(key) {
         setSelectedPortals(prev =>
@@ -113,8 +125,8 @@ export default function DashboardPage() {
         addActivity({ type: 'STOP', message: 'Scan stopped by user', timestamp: new Date().toISOString() })
     }
 
-    function handleSaveToggle(id) {
-        toggleSave(id)
+    function handleSaveToggle(id, newState) {
+        setSaved(id, newState)
     }
 
     const sorted = [...results].sort((a, b) => {
@@ -324,6 +336,13 @@ export default function DashboardPage() {
                             <TenderCard key={t.id} tender={t} onSaveToggle={handleSaveToggle} />
                         ))}
                     </div>
+                    {hasMore && !scanning && results.length > 0 && (
+                        <div style={{ marginTop: 24, textAlign: 'center' }}>
+                            <button className="btn btn-secondary" disabled={loadingMore} onClick={() => loadRecentTenders(page + 1)}>
+                                {loadingMore ? 'Loading...' : 'Load More'}
+                            </button>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

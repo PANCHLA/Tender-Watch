@@ -37,15 +37,21 @@ def sse(event_data: dict) -> str:
     return f"data: {json.dumps(event_data)}\n\n"
 
 
+from auth import DEV_USER
+from routers.tenders import _demo_tenders_store
+
 def _store_tenders(tenders: list[dict], user_id: str | None) -> list[dict]:
     """
     Insert scraped tenders into the Supabase tenders table.
     Returns the list of tenders enriched with their DB ids.
     """
     sb = get_supabase()
-    if not sb or not tenders:
+    is_dev_user = user_id == DEV_USER["id"]
+    if not sb or not tenders or is_dev_user:
         for i, t in enumerate(tenders):
-            t.setdefault("id", str(uuid.uuid4()))
+            t_id = str(uuid.uuid4())
+            t["id"] = t_id
+            _demo_tenders_store[t_id] = t
         return tenders
 
     rows = []

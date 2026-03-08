@@ -9,13 +9,28 @@ import { Bookmark } from 'lucide-react'
 export default function SavedPage() {
     const [tenders, setTenders] = useState([])
     const [loading, setLoading] = useState(true)
+    const [page, setPage] = useState(1)
+    const [hasMore, setHasMore] = useState(false)
     const navigate = useNavigate()
 
+    async function loadMore(p) {
+        setLoading(true)
+        try {
+            const data = await fetchTenders({ is_saved: true, page: p, page_size: 20 })
+            const newTenders = data.tenders || []
+            if (p === 1) {
+                setTenders(newTenders)
+            } else {
+                setTenders(prev => [...prev, ...newTenders])
+            }
+            setHasMore(newTenders.length === 20)
+            setPage(p)
+        } catch { }
+        setLoading(false)
+    }
+
     useEffect(() => {
-        fetchTenders({ is_saved: true })
-            .then(data => setTenders(data.tenders || []))
-            .catch(() => { })
-            .finally(() => setLoading(false))
+        loadMore(1)
     }, [])
 
     function handleUnsave(id, newState) {
@@ -45,11 +60,20 @@ export default function SavedPage() {
                     }
                 />
             ) : (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 16 }}>
-                    {tenders.map(t => (
-                        <TenderCard key={t.id} tender={t} onSaveToggle={handleUnsave} />
-                    ))}
-                </div>
+                <>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 16 }}>
+                        {tenders.map(t => (
+                            <TenderCard key={t.id} tender={t} onSaveToggle={handleUnsave} />
+                        ))}
+                    </div>
+                    {hasMore && (
+                        <div style={{ marginTop: 24, textAlign: 'center' }}>
+                            <button className="btn btn-secondary" disabled={loading} onClick={() => loadMore(page + 1)}>
+                                {loading ? 'Loading...' : 'Load More'}
+                            </button>
+                        </div>
+                    )}
+                </>
             )}
         </div>
     )
