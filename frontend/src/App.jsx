@@ -13,6 +13,8 @@ import DashboardPage from './pages/DashboardPage'
 import SavedPage from './pages/SavedPage'
 import WatchlistsPage from './pages/WatchlistsPage'
 import AlertsPage from './pages/AlertsPage'
+import HistoryPage from './pages/HistoryPage'
+import HistoryDetailPage from './pages/HistoryDetailPage'
 import SettingsPage from './pages/SettingsPage'
 
 const DEMO_MODE = import.meta.env.VITE_DEMO_MODE === 'true'
@@ -74,6 +76,16 @@ export default function App() {
         <Route path="/app/alerts" element={
           <ProtectedRoute>
             <Layout><AlertsPage /></Layout>
+          </ProtectedRoute>
+        } />
+        <Route path="/app/history" element={
+          <ProtectedRoute>
+            <Layout><HistoryPage /></Layout>
+          </ProtectedRoute>
+        } />
+        <Route path="/app/history/:id" element={
+          <ProtectedRoute>
+            <Layout><HistoryDetailPage /></Layout>
           </ProtectedRoute>
         } />
         <Route path="/app/settings" element={

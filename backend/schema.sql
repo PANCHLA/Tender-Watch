@@ -32,6 +32,7 @@ CREATE TABLE IF NOT EXISTS tenders (
   id               uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   watchlist_id     uuid REFERENCES watchlists(id) ON DELETE SET NULL,
   user_id          uuid REFERENCES users(id) ON DELETE CASCADE,
+  search_history_id uuid REFERENCES search_history(id) ON DELETE SET NULL,
   portal           text NOT NULL,
   title            text NOT NULL,
   reference_number text,
@@ -97,4 +98,22 @@ CREATE POLICY "alert_settings_own" ON alert_settings FOR ALL USING (auth.uid() =
 CREATE INDEX IF NOT EXISTS tenders_user_id_idx      ON tenders(user_id);
 CREATE INDEX IF NOT EXISTS tenders_deadline_idx     ON tenders(deadline);
 CREATE INDEX IF NOT EXISTS tenders_portal_idx       ON tenders(portal);
+CREATE INDEX IF NOT EXISTS tenders_search_idx       ON tenders(search_history_id);
 CREATE INDEX IF NOT EXISTS watchlists_user_id_idx   ON watchlists(user_id);
+
+-- ── Search History ───────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS search_history (
+  id              uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id         uuid REFERENCES users(id) ON DELETE CASCADE,
+  keywords        text NOT NULL,
+  portals         text[] NOT NULL DEFAULT '{}',
+  min_value       bigint,
+  max_value       bigint,
+  location        text,
+  tenders_found   int DEFAULT 0,
+  created_at      timestamptz DEFAULT now()
+);
+
+ALTER TABLE search_history ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "search_history_own" ON search_history FOR ALL USING (auth.uid() = user_id);
+CREATE INDEX IF NOT EXISTS search_history_user_id_idx ON search_history(user_id);

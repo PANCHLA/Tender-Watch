@@ -45,21 +45,6 @@ export default function SettingsPage() {
                     </button>
                 </div>
             </div>
-
-            {/* API Info */}
-            <div className="card" style={{ padding: 24 }}>
-                <div style={{ fontSize: 11, color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 16 }}>
-                    API Configuration
-                </div>
-                <div style={{ fontSize: 12, color: 'var(--text2)', marginBottom: 12 }}>
-                    TenderWatch uses the TinyFish Web Agent API to scan procurement portals. Configure your API key in the backend <code style={{ fontFamily: 'DM Mono', background: 'var(--surface2)', padding: '2px 6px', borderRadius: 4 }}>.env</code> file.
-                </div>
-                <div style={{ background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: 8, padding: 14, fontFamily: 'DM Mono', fontSize: 12, color: 'var(--text3)' }}>
-                    TINYFISH_API_KEY=<span style={{ color: 'var(--text2)' }}>your_key_here</span><br />
-                    SUPABASE_URL=<span style={{ color: 'var(--text2)' }}>https://xxxx.supabase.co</span><br />
-                    RESEND_API_KEY=<span style={{ color: 'var(--text2)' }}>your_resend_key</span>
-                </div>
-            </div>
         </div>
     )
 }
